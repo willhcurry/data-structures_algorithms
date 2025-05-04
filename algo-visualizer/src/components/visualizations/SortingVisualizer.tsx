@@ -1,9 +1,32 @@
+/**
+ * Sorting Algorithm Visualizer Component
+ * 
+ * This component provides an interactive visualization of common sorting algorithms
+ * used in computer science. It demonstrates both the mechanics of how these algorithms
+ * work and their relative performance characteristics through animated visualization.
+ * 
+ * Features:
+ * - Step-by-step visualization of sorting algorithms
+ * - Interactive controls for playback, speed, and array size
+ * - Educational information about algorithm complexity and use cases
+ * - Tutorial mode with detailed explanations of each step
+ * 
+ * Implementation notes:
+ * - Uses a stateful approach to track sorting progress
+ * - Pre-computes all sorting steps for smooth animation
+ * - Employs color-coding to indicate comparisons and swaps
+ * - Responsive design adapts to different screen sizes
+ * 
+ * @author Your Name
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { bubbleSort, quickSort, generateRandomArray, SortStep } from '../../lib/algorithms/sortingAlgorithms';
 
+/** Defines the supported sorting algorithm types */
 type AlgorithmType = 'bubble' | 'quick';
 
 const SortingVisualizer: React.FC = () => {
+  // State management for array data and visualization
   const [array, setArray] = useState<number[]>([]);
   const [sortSteps, setSortSteps] = useState<SortStep[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(-1);
@@ -11,25 +34,38 @@ const SortingVisualizer: React.FC = () => {
   const [speed, setSpeed] = useState<number>(50);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [arraySize, setArraySize] = useState<number>(30);
+  
+  // UI state for educational features
   const [showIntro, setShowIntro] = useState<boolean>(true);
   const [tutorialMode, setTutorialMode] = useState<boolean>(false);
   
+  // Reference for animation frame to allow proper cleanup
   const animationRef = useRef<number | null>(null);
   
+  /**
+   * Generates a new random array and resets the visualization state.
+   * Wrapped in useCallback to prevent unnecessary re-renders and
+   * to allow for proper dependency tracking in useEffect.
+   */
   const resetArray = useCallback(() => {
+    // Cancel any ongoing animations to prevent state conflicts
     setIsPlaying(false);
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
     
+    // Generate and set a new random array with values scaled to container height
     const newArray = generateRandomArray(arraySize, 100);
     setArray(newArray);
     setSortSteps([]);
     setCurrentStep(-1);
   }, [arraySize]);
   
-  // Start sorting animation
+  /**
+   * Initiates or resumes the sorting animation.
+   * Handles edge case where animation has completed by resetting to beginning.
+   */
   const startSort = () => {
     if (currentStep >= sortSteps.length - 1) {
       setCurrentStep(-1);
@@ -38,12 +74,19 @@ const SortingVisualizer: React.FC = () => {
     setIsPlaying(true);
   };
   
-  // Pause sorting animation
+  /**
+   * Pauses the sorting animation without losing current progress.
+   */
   const pauseSort = () => {
     setIsPlaying(false);
   };
   
-  // Helper function to get explanations based on algorithm and step
+  /**
+   * Generates human-readable explanations for the current algorithm step.
+   * Provides educational context based on the current algorithm and operation.
+   * 
+   * @returns {string} A descriptive explanation of the current step
+   */
   const getStepExplanation = () => {
     if (currentStep < 0 || !sortSteps[currentStep]) return "";
     
@@ -70,7 +113,11 @@ const SortingVisualizer: React.FC = () => {
     return "";
   };
   
-  // Run animation loop
+  /**
+   * Animation loop effect that advances through sorting steps.
+   * Uses setTimeout for controlled animation speed rather than requestAnimationFrame
+   * to allow for better speed control.
+   */
   useEffect(() => {
     if (!isPlaying || currentStep >= sortSteps.length - 1) {
       if (isPlaying && currentStep >= sortSteps.length - 1) {
@@ -86,7 +133,10 @@ const SortingVisualizer: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [isPlaying, currentStep, sortSteps, speed]);
   
-  // Calculate sort steps when algorithm changes
+  /**
+   * Recalculates sorting steps when the array or algorithm changes.
+   * Pre-computes all steps for smoother animation and better UX.
+   */
   useEffect(() => {
     if (array.length === 0) return;
     
@@ -101,10 +151,14 @@ const SortingVisualizer: React.FC = () => {
     setCurrentStep(-1);
   }, [array, algorithm]);
   
-  // Initialize with a random array
+  /**
+   * Initializes the component with a random array on mount and when array size changes.
+   */
   useEffect(() => {
     resetArray();
   }, [resetArray]);
+  
+  // Additional derived state and helper functions with comments...
   
   // Get current array state based on animation step
   const currentArray = currentStep >= 0 && currentStep < sortSteps.length 
